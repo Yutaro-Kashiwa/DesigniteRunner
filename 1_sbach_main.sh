@@ -10,5 +10,7 @@
 #SBATCH --mem=64G
 #SBATCH --cpus-per-task=8
 
+mkdir -p errors
+mkdir -p logs
 
 echo bash main.bash $SLURM_JOBID
