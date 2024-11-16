@@ -13,4 +13,4 @@
 mkdir -p errors
 mkdir -p logs
 
-echo bash main.bash $SLURM_JOBID
+echo bash main.bash $SLURM_ARRAY_TASK_ID
