@@ -13,11 +13,13 @@ count=1
 while IFS= read -r repo_name; do
   echo $count
   if [[ -n "$target_count" && $count -eq $target_count ]]; then
-    echo "YES"
+    echo "RUN"
+    ((count++))
+  else
+    echo "SKIP"
     ((count++))
     continue
   fi
-  ((count++))
   cd cloned_repos || exit
   echo "-------------------------"
   echo "Processing repository: $repo_name"
@@ -40,6 +42,9 @@ while IFS= read -r repo_name; do
   cd ../../..
 
   sha_dir='sha/'$repo_name
+
+
+
   echo $sha_dir
   if [[ -d "$sha_dir" ]]; then
     sha_file=$sha_dir/list.txt
@@ -67,6 +72,17 @@ while IFS= read -r repo_name; do
   	cd cloned_repos/$repo_name
   	git reset --hard
     git checkout $sha
+    current_sha=$(git rev-parse HEAD)
+    if [ "$current_sha" == "$sha" ]; then
+      echo "SHA matches: $current_sha"
+    else
+      echo "SHA does not match. "
+      echo "  Tried checkout SHA: $sha"
+      echo "  Current SHA: $current_sha"
+      mv $output_dir.tmp $output_dir.checkout.error
+      continue
+    fi
+
     cd ../../..
     #Designiteを走らせる
     # java -jar Designite.java
@@ -85,12 +101,3 @@ while IFS= read -r repo_name; do
 done < projects.txt
 
 
-
-
-
-#Read sha lists in the dictory according to the repository name 
-#Check directory "outputs" has ファイルおよびtmpが存在するか確認する．
-#なければtmpを作る
-#リポジトリをクローンする
-#実行する
-#完了すればtmpを削除する
