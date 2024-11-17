@@ -33,13 +33,13 @@ while IFS= read -r repo_name; do
     else
   	  mkdir -p $sha_dir
     fi
-    git reset --hard
+    git reset --hard origin/HEAD
     git config pull.rebase false
     git pull
     git pull origin main
     git pull origin master
-    git reset --hard
-    git checkout
+    git reset --hard origin/HEAD
+
     # Get the list of commit SHAs
     git log --pretty=format:"%H" > "$sha_dir"/list.txt
     
