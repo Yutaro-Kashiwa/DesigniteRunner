@@ -65,6 +65,7 @@ while IFS= read -r repo_name; do
       echo "this sha is being analyzed"
       continue
     fi
+    mkdir "outputs/$repo_name"
     mkdir $output_dir.tmp
   	echo "Checkout:" $sha
   	cd cloned_repos/$repo_name
