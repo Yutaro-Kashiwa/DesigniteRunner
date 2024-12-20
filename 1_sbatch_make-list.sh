@@ -12,5 +12,6 @@
 
 mkdir -p errors
 mkdir -p logs
+mkdir -p sha
 module load java
 bash make-list.bash $SLURM_ARRAY_TASK_ID
