@@ -11,6 +11,7 @@ mkdir -p cloned_repos
 count=1
 # Read the repository name from projects.txt
 while IFS= read -r repo_name; do
+  # 並列処理用プログラム
   echo "--$count-----------------------"
   if [[ -n "$target_count" && $count -eq $target_count ]]; then
     echo "Processing repository: $repo_name"
@@ -21,13 +22,15 @@ while IFS= read -r repo_name; do
     continue
   fi
   cd cloned_repos || exit
+
+
   # Clone the repository
   if [[ -d "$repo_name" ]]; then
   	echo "  Repository already exists"
   else
    	echo "  Cloning starts"
    	echo https://github.com/$repo_name
- 	git clone https://github.com/$repo_name $repo_name
+ 	  git clone https://github.com/$repo_name $repo_name
   fi
 
   # Check if the repository was cloned successfully
@@ -35,14 +38,14 @@ while IFS= read -r repo_name; do
   	cd "$repo_name"
   else
     echo "ERROR: Failed to clone repository: $repo_name"
+
     exit
   fi
   cd ../../..
 
+
+
   sha_dir='sha/'$repo_name
-
-
-
   echo $sha_dir
   if [[ -d "$sha_dir" ]]; then
     sha_file=$sha_dir/list.txt
@@ -70,7 +73,13 @@ while IFS= read -r repo_name; do
   	echo "Checkout:" $sha
   	cd cloned_repos/$repo_name
   	git reset --hard
-    git checkout $sha
+    if git checkout "$sha"; then
+      echo "Checkout succeeded."
+    else
+      echo "Error: Checkout failed for revision $REVISION." >&2
+      mv $output_dir.tmp $output_dir.checkout.error
+      exit 1
+    fi
     current_sha=$(git rev-parse HEAD)
     if [ "$current_sha" == "$sha" ]; then
       echo "SHA matches: $current_sha"
@@ -84,20 +93,16 @@ while IFS= read -r repo_name; do
 
     cd ../../..
     pwd
-    #Designiteを走らせる
-    # java -jar Designite.java
-    java -jar ./DesigniteJava.jar -i cloned_repos/$repo_name -o $output_dir.tmp
 
+    bash main-command.sh
     #出力ファイルをproject/sha.csvにする
 
     # mv XXX outputs/$repo_name/$sha.txt
     mv $output_dir.tmp $output_dir
 
   done < $sha_file
-  
   # Go back to the cloned_repos directory
   cd ../../..
-
 done < projects.txt
 
 
