@@ -50,7 +50,7 @@ while IFS= read -r repo_name; do
   if [[ -d "$sha_dir" ]]; then
     sha_file=$sha_dir/list.txt
   else
-	echo "  ERROR: Sha directory does not exist"
+	  echo "  ERROR: Sha directory does not exist"
   	exit
   fi
   
@@ -68,8 +68,8 @@ while IFS= read -r repo_name; do
       echo "this sha is being analyzed"
       continue
     fi
-    mkdir "outputs/$repo_name"
-    mkdir $output_dir.tmp
+    mkdir -p "outputs/$repo_name"
+    mkdir -p $output_dir.tmp
   	echo "Checkout:" $sha
   	cd cloned_repos/$repo_name
   	git reset --hard
