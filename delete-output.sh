@@ -8,7 +8,6 @@ fi
 target_count=$1
 
 
-cd outputs
 count=1
 # Read the repository name from projects.txt
 while IFS= read -r repo_name; do
@@ -23,9 +22,9 @@ while IFS= read -r repo_name; do
   fi
 
   # Clone the repository
-  if [[ -d "$repo_name" ]]; then
+  if [[ -d "outputs/$repo_name" ]]; then
   	echo "  Repository exists"
-  	rm -Rf $repo_name
+  	rm -Rf outputs/$repo_name
   fi
 done < projects.txt
 
