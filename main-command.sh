@@ -1,3 +1,3 @@
 #Designiteを走らせる
 # java -jar Designite.java
-java -jar ./DesigniteJava.jar -i cloned_repos/$repo_name -o $output_dir.tmp
+java -jar ./DesigniteJava.jar -i $1 -o $2

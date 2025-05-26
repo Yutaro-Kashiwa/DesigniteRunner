@@ -92,10 +92,11 @@ while IFS= read -r repo_name; do
     fi
 
     cd ../../..
-    pwd
-
-    bash main-command.sh
+    echo "-run start-----"
+    echo $output_dir.tmp
+    bash main-command.sh cloned_repos/$repo_name $output_dir.tmp
     #出力ファイルをproject/sha.csvにする
+    echo "-run finish-----"
 
     # mv XXX outputs/$repo_name/$sha.txt
     mv $output_dir.tmp $output_dir
