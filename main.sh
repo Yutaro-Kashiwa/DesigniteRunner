@@ -73,13 +73,57 @@ while IFS= read -r repo_name; do
   	echo "Checkout:" $sha
   	cd cloned_repos/$repo_name
   	git reset --hard
-    if git checkout "$sha"; then
-      echo "Checkout succeeded."
-    else
-      echo "Error: Checkout failed for revision $REVISION." >&2
-      mv $output_dir.tmp $output_dir.checkout.error
-      exit 1
-    fi
+	git clean -fd
+	# Attempt checkout and capture its output (stdout and stderr)
+        checkout_output_and_error=$(git checkout "$sha" 2>&1)
+        checkout_status=$? # Get the exit status of the checkout command
+
+        if [ $checkout_status -eq 0 ]; then
+          echo "Checkout succeeded."
+        else
+          # Initial checkout failed
+          echo "Initial checkout failed for revision $sha."
+          echo "Error output: $checkout_output_and_error"
+
+          # Check if the failure was due to index.lock
+          if echo "$checkout_output_and_error" | grep -q "index.lock"; then
+            echo "Detected .git/index.lock issue. Attempting to remove lock file and retry checkout..."
+            rm -f .git/index.lock # Remove the lock file (-f to suppress error if not found)
+            
+            # Retry checkout
+            echo "Retrying checkout for $sha..."
+            checkout_output_and_error_retry=$(git checkout "$sha" 2>&1) # Capture output of retry
+            checkout_status_retry=$? # Get exit status of retry
+
+            if [ $checkout_status_retry -eq 0 ]; then
+              echo "Checkout succeeded on retry."
+            else
+              # Checkout still failed after removing index.lock
+              echo "Error: Checkout STILL failed for revision $sha after attempting to remove .git/index.lock." >&2
+              echo "Error output on retry: $checkout_output_and_error_retry"
+              # cd back to the main script directory before mv
+              cd ../../.. 
+              if [[ -d "$output_dir.tmp" ]]; then
+                mv "$output_dir.tmp" "$output_dir.checkout.error"
+              else
+                echo "Error: $output_dir.tmp does not exist for $sha, cannot rename for checkout error."
+              fi
+              exit 1
+            fi
+          else
+            # Checkout failed for a reason other than index.lock
+            echo "Error: Checkout failed for revision $sha (not a .git/index.lock issue)." >&2
+            # cd back to the main script directory before mv
+            cd ../../..
+            if [[ -d "$output_dir.tmp" ]]; then
+              mv "$output_dir.tmp" "$output_dir.checkout.error"
+            else
+              echo "Error: $output_dir.tmp does not exist for $sha, cannot rename for checkout error."
+            fi
+            exit 1
+          fi
+        fi
+    
     current_sha=$(git rev-parse HEAD)
     if [ "$current_sha" == "$sha" ]; then
       echo "SHA matches: $current_sha"
